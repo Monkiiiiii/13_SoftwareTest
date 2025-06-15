@@ -1,0 +1,67 @@
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: online-boutique-monitor
+  namespace: monitoring
+  labels:
+    app: online-boutique
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: microservices-demo
+  namespaceSelector:
+    matchNames:
+      - default
+      - online-boutique
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+  - port: grpc
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: frontend-monitor
+  namespace: monitoring
+  labels:
+    app: online-boutique
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: frontend
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+  - port: http
+    path: /stats/prometheus
+    interval: 15s
+    scrapeTimeout: 10s
+---
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: cartservice-monitor
+  namespace: monitoring
+  labels:
+    app: online-boutique
+    release: prometheus
+spec:
+  selector:
+    matchLabels:
+      app: cartservice
+  namespaceSelector:
+    matchNames:
+      - default
+  endpoints:
+  - port: http
+    path: /metrics
+    interval: 15s
+    scrapeTimeout: 10s 

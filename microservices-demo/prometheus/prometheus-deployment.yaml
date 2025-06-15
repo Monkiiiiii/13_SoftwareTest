@@ -1,0 +1,167 @@
+apiVersion: v1
+kind: Namespace
+metadata:
+  name: monitoring
+---
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: prometheus-config
+  namespace: monitoring
+data:
+  prometheus.yml: |
+    global:
+      scrape_interval: 15s
+      evaluation_interval: 15s
+    
+    scrape_configs:
+      # Prometheus自身监控
+      - job_name: 'prometheus'
+        static_configs:
+          - targets: ['localhost:9090']
+      
+      # Online Boutique微服务监控
+      - job_name: 'online-boutique-services'
+        kubernetes_sd_configs:
+        - role: endpoints
+          namespaces:
+            names:
+            - default
+        relabel_configs:
+        # 只保留有app标签的服务
+        - source_labels: [__meta_kubernetes_service_label_app]
+          action: keep
+          regex: (frontend|productcatalogservice|cartservice|currencyservice|paymentservice|shippingservice|emailservice|checkoutservice|recommendationservice|adservice|loadgenerator)
+        # 只保留有metrics端点的服务
+        - source_labels: [__meta_kubernetes_endpoint_port_name]
+          action: keep
+          regex: (http|grpc|metrics)
+        # 设置metrics路径
+        - source_labels: [__meta_kubernetes_service_label_app]
+          action: replace
+          target_label: __metrics_path__
+          regex: frontend
+          replacement: /stats/prometheus
+        - source_labels: [__meta_kubernetes_service_label_app]
+          action: replace
+          target_label: __metrics_path__
+          regex: (cartservice|currencyservice|paymentservice|shippingservice|emailservice|checkoutservice|recommendationservice|adservice|productcatalogservice)
+          replacement: /metrics
+        # 添加服务名标签
+        - source_labels: [__meta_kubernetes_service_name]
+          action: replace
+          target_label: service
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: pod
+      
+      # Kubernetes Pods监控
+      - job_name: 'kubernetes-pods'
+        kubernetes_sd_configs:
+        - role: pod
+        relabel_configs:
+        # 只监控有prometheus.io/scrape=true注解的Pod
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_scrape]
+          action: keep
+          regex: true
+        - source_labels: [__meta_kubernetes_pod_annotation_prometheus_io_path]
+          action: replace
+          target_label: __metrics_path__
+          regex: (.+)
+        - source_labels: [__address__, __meta_kubernetes_pod_annotation_prometheus_io_port]
+          action: replace
+          regex: ([^:]+)(?::\d+)?;(\d+)
+          replacement: $1:$2
+          target_label: __address__
+        - action: labelmap
+          regex: __meta_kubernetes_pod_label_(.+)
+        - source_labels: [__meta_kubernetes_namespace]
+          action: replace
+          target_label: kubernetes_namespace
+        - source_labels: [__meta_kubernetes_pod_name]
+          action: replace
+          target_label: kubernetes_pod_name
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: prometheus
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: prometheus
+  template:
+    metadata:
+      labels:
+        app: prometheus
+    spec:
+      serviceAccountName: prometheus
+      containers:
+      - name: prometheus
+        image: prom/prometheus:latest
+        args:
+          - '--config.file=/etc/prometheus/prometheus.yml'
+          - '--storage.tsdb.path=/prometheus/'
+          - '--web.console.libraries=/etc/prometheus/console_libraries'
+          - '--web.console.templates=/etc/prometheus/consoles'
+          - '--storage.tsdb.retention.time=200h'
+          - '--web.enable-lifecycle'
+          - '--web.enable-admin-api'
+        ports:
+        - containerPort: 9090
+          name: web
+        volumeMounts:
+        - name: prometheus-config-volume
+          mountPath: /etc/prometheus/
+        - name: prometheus-storage-volume
+          mountPath: /prometheus/
+        resources:
+          requests:
+            cpu: 500m
+            memory: 1Gi
+          limits:
+            cpu: 1000m
+            memory: 2Gi
+        livenessProbe:
+          httpGet:
+            path: /-/healthy
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+        readinessProbe:
+          httpGet:
+            path: /-/ready
+            port: 9090
+          initialDelaySeconds: 30
+          timeoutSeconds: 30
+      volumes:
+      - name: prometheus-config-volume
+        configMap:
+          defaultMode: 420
+          name: prometheus-config
+      - name: prometheus-storage-volume
+        emptyDir: {}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: prometheus-service
+  namespace: monitoring
+  labels:
+    app: prometheus
+spec:
+  selector:
+    app: prometheus
+  type: NodePort
+  ports:
+    - port: 9090
+      targetPort: 9090
+      nodePort: 30090
+      name: web 

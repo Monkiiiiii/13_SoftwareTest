@@ -1,0 +1,129 @@
+
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>KPI异常检测评估报告</title>
+            <meta charset="utf-8">
+            <style>
+                body { font-family: Arial, sans-serif; line-height: 1.6; max-width: 1200px; margin: auto; padding: 20px; }
+                h1, h2, h3 { color: #2c3e50; }
+                .card { background: #f9f9f9; border-radius: 5px; padding: 15px; margin-bottom: 20px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+                .metrics-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px; }
+                .metric-card { text-align: center; padding: 10px; background: #e3f2fd; border-radius: 5px; }
+                .metric-value { font-size: 24px; font-weight: bold; color: #1976d2; margin: 10px 0; }
+                .img-container { text-align: center; margin: 20px 0; }
+                img { max-width: 100%; height: auto; }
+                table { width: 100%; border-collapse: collapse; margin-bottom: 20px; }
+                th, td { border: 1px solid #ddd; padding: 8px; text-align: left; }
+                th { background-color: #f2f2f2; }
+                tr:nth-child(even) { background-color: #f9f9f9; }
+            </style>
+        </head>
+        <body>
+            <h1>KPI异常检测评估报告</h1>
+            <p>生成时间: 2025-06-07 17:11:48</p>
+            <p>结果文件: detection_results.csv</p>
+            
+            <div class="card">
+                <h2>数据集概览</h2>
+                <p>总记录数: 20,500</p>
+                <p>KPI数量: 2</p>
+                <p>时间范围: 2025-06-07 06:10:47 至 2025-06-07 06:35:32</p>
+                <p>异常点比例: 20.00%</p>
+            </div>
+            
+            <div class="card">
+                <h2>整体性能指标</h2>
+                <div class="metrics-grid">
+                    <div class="metric-card">
+                        <div>F1分数</div>
+                        <div class="metric-value">0.9809</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>精确率</div>
+                        <div class="metric-value">0.9624</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>召回率</div>
+                        <div class="metric-value">1.0000</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>真实异常</div>
+                        <div class="metric-value">4,100</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>检测异常</div>
+                        <div class="metric-value">4,260</div>
+                    </div>
+                    <div class="metric-card">
+                        <div>误报数</div>
+                        <div class="metric-value">160</div>
+                    </div>
+                </div>
+            </div>
+        
+        <div class="card">
+            <h2>KPI性能排行榜</h2>
+        
+            <div class="img-container">
+                <img src="kpi_performance.png" alt="KPI性能排行榜">
+            </div>
+            
+            <table>
+                <tr>
+                    <th>KPI ID</th>
+                    <th>数据点数</th>
+                    <th>异常点数</th>
+                    <th>检测点数</th>
+                    <th>F1分数</th>
+                    <th>精确率</th>
+                    <th>召回率</th>
+                </tr>
+            
+                <tr>
+                    <td>31f390b4-8046-5d73-a22f-0ae7be...</td>
+                    <td>10300</td>
+                    <td>2060</td>
+                    <td>2140</td>
+                    <td>0.9810</td>
+                    <td>0.9626</td>
+                    <td>1.0000</td>
+                </tr>
+                
+                <tr>
+                    <td>449f9a93-4374-5456-a840-3b4b24...</td>
+                    <td>10200</td>
+                    <td>2040</td>
+                    <td>2120</td>
+                    <td>0.9808</td>
+                    <td>0.9623</td>
+                    <td>1.0000</td>
+                </tr>
+                
+            </table>
+            
+        </div>
+        
+        <div class="card">
+            <h2>指标分布</h2>
+            <div class="img-container">
+                <img src="metrics_distribution.png" alt="指标分布">
+            </div>
+        </div>
+        
+        <div class="card">
+            <h2>详细检测结果示例</h2>
+        
+            <h3>最佳性能KPI (F1=0.981)</h3>
+            <iframe src="kpi_31f390b4-8_timeseries.html" width="100%" height="600" frameborder="0"></iframe>
+            
+            <h3>中等性能KPI (F1=0.981)</h3>
+            <iframe src="kpi_449f9a93-4_timeseries.html" width="100%" height="600" frameborder="0"></iframe>
+            
+            <h3>最差性能KPI (F1=0.981)</h3>
+            <iframe src="kpi_449f9a93-4_timeseries.html" width="100%" height="600" frameborder="0"></iframe>
+            
+        </div>
+        </body>
+        </html>
+        

@@ -1,0 +1,14 @@
+apiVersion: chaos-mesh.org/v1alpha1
+kind: NetworkChaos
+metadata:
+  name: payment-delay
+  namespace: sock-shop
+spec:
+  action: delay
+  mode: one
+  selector:
+    labelSelectors:
+      "app": "payment"
+  delay:
+    latency: "500ms"    # 延迟500毫秒
+  duration: "2m"        # 持续2分钟
